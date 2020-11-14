@@ -7,7 +7,7 @@ from utils.utils import *
 def detect(save_img=False):
     out, source, weights, half, view_img, save_txt, imgsz = \
         opt.output, opt.source, opt.weights, opt.half, opt.view_img, opt.save_txt, opt.img_size
-    webcam = source == '0' or source.startswith('rtsp') or source.startswith('http') or source.endswith('.txt')
+    webcam = source.isdigit() or source.startswith('rtsp') or source.startswith('http') or source.endswith('.txt')
 
     # Initialize
     device = torch_utils.select_device(opt.device)
@@ -33,6 +33,8 @@ def detect(save_img=False):
     half = half and device.type != 'cpu'  # half precision only supported on CUDA
     if half:
         model.half()
+    else :
+        model.float()
 
     # Set Dataloader
     vid_path, vid_writer = None, None
@@ -51,6 +53,7 @@ def detect(save_img=False):
     # Run inference
     t0 = time.time()
     img = torch.zeros((1, 3, imgsz, imgsz), device=device)  # init img
+
     _ = model(img.half() if half else img.float()) if device.type != 'cpu' else None  # run once
     for path, img, im0s, vid_cap in dataset:
         img = torch.from_numpy(img).to(device)
